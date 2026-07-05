@@ -1,0 +1,17 @@
+{
+  "name": "tech-support-chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:all": "start cmd /k \"npm run dev:backend\" & start cmd /k \"npm run dev:frontend\"",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix backend run start",
+    "prod": "npm run build && cross-env NODE_ENV=production npm run start"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
