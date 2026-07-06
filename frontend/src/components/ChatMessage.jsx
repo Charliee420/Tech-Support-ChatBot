@@ -1,6 +1,8 @@
+import { memo } from "react";
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 
-function ChatMessage({ message }) {
+// ⚡ Bolt: wrap ChatMessage in React.memo to prevent re-rendering historical messages during chat streaming
+const ChatMessage = memo(function ChatMessage({ message }) {
   const isUser = message.role === "user";
 
   return (
@@ -33,6 +35,6 @@ function ChatMessage({ message }) {
       </div>
     </div>
   );
-}
+});
 
 export default ChatMessage;
