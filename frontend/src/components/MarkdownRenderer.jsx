@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -25,14 +25,11 @@ function CopyButton({ code }) {
   );
 }
 
-function MarkdownRenderer({ content }) {
-  return (
-    <div className="prose-custom">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code({ className, children, ...props }) {
-            const isInline = !className;
+const remarkPlugins = [remarkGfm];
+
+const components = {
+  code({ className, children, ...props }) {
+    const isInline = !className;
             const codeStr = String(children).replace(/\n$/, "");
 
             if (isInline) {
@@ -125,15 +122,25 @@ function MarkdownRenderer({ content }) {
               </th>
             );
           },
-          td({ children }) {
-            return (
-              <td className="border border-zinc-700 px-3 py-2 text-zinc-400">{children}</td>
-            );
-          },
-        }}
-      />
+  td({ children }) {
+    return (
+      <td className="border border-zinc-700 px-3 py-2 text-zinc-400">{children}</td>
+    );
+  },
+};
+
+// ⚡ Bolt: memoize MarkdownRenderer to prevent unnecessary re-renders when parent streams new text.
+const MarkdownRenderer = memo(function MarkdownRenderer({ content }) {
+  return (
+    <div className="prose-custom">
+      <ReactMarkdown
+        remarkPlugins={remarkPlugins}
+        components={components}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
-}
+});
 
 export default MarkdownRenderer;
