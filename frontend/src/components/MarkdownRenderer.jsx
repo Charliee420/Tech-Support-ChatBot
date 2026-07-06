@@ -30,6 +30,7 @@ function MarkdownRenderer({ content }) {
     <div className="prose-custom">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        children={content}
         components={{
           code({ className, children, ...props }) {
             const isInline = !className;
