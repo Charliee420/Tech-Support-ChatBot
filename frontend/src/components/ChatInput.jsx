@@ -38,6 +38,7 @@ function ChatInput({ onSend, disabled }) {
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             placeholder="Describe your problem..."
+            aria-label="Message input"
             rows={1}
             disabled={disabled}
             className="w-full resize-none rounded-xl bg-zinc-800/50 border border-zinc-700 px-4 py-2.5 pr-10 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-cyan-600/50 focus:ring-1 focus:ring-cyan-600/30 transition-colors disabled:opacity-50"
@@ -46,7 +47,9 @@ function ChatInput({ onSend, disabled }) {
         <button
           onClick={handleSubmit}
           disabled={disabled || !input.trim()}
-          className="size-10 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white flex items-center justify-center transition-colors shrink-0"
+          aria-label="Send message"
+          title="Send message"
+          className="size-10 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white flex items-center justify-center transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
         >
           <svg
             className="size-5"
