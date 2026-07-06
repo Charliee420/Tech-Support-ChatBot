@@ -40,12 +40,23 @@ app.post("/api/chat", async (req, res) => {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
+    // 🛡️ Sentinel: Input validation to prevent DoS via excessive input
+    if (messages.length > 100) {
+      return res.status(400).json({ error: "Too many messages" });
+    }
+
     const apiMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages.map((m) => ({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content: m.content,
-      })),
+      ...messages.map((m) => {
+        let safeContent = typeof m.content === "string" ? m.content : String(m.content || "");
+        if (safeContent.length > 4000) {
+          safeContent = safeContent.slice(0, 4000);
+        }
+        return {
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: safeContent,
+        };
+      }),
     ];
 
     const stream = await openai.chat.completions.create({
@@ -64,11 +75,12 @@ app.post("/api/chat", async (req, res) => {
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
   } catch (err) {
+    // 🛡️ Sentinel: Fail securely - don't expose error details to client
     console.error("Chat error:", err);
     if (!res.headersSent) {
-      res.status(500).json({ error: err.message || "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     } else {
-      res.write(`data: ${JSON.stringify({ error: err.message || "Stream error" })}\n\n`);
+      res.write(`data: ${JSON.stringify({ error: "An error occurred during chat generation" })}\n\n`);
       res.end();
     }
   }
