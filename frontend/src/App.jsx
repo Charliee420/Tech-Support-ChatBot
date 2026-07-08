@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ChatMessage from "./components/ChatMessage.jsx";
 import ChatInput from "./components/ChatInput.jsx";
 
@@ -10,15 +10,22 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // ⚡ Bolt: switch from smooth scroll to auto scroll when streaming chunks to avoid layout jank
+    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
   }, [messages, isLoading]);
 
-  async function sendMessage(content) {
+  // ⚡ Bolt: stabilize sendMessage with useCallback so ChatInput memoization works properly
+  const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
@@ -32,7 +39,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
+          messages: [...messagesRef.current, userMsg].map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -90,7 +97,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   return (
     <div className="flex flex-col h-dvh max-w-3xl mx-auto">
