@@ -9,7 +9,10 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-app.use(cors());
+// 🛡️ Sentinel: Restrict CORS origin to frontend only, instead of all origins
+app.use(cors({
+  origin: process.env.NODE_ENV === "production" ? false : "http://localhost:5173",
+}));
 app.use(express.json({ limit: "2mb" }));
 
 const apiKey = process.env.LLM_API_KEY;
