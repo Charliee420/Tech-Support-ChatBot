@@ -15,7 +15,9 @@ function App() {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+    // Smooth scrolling every 50ms while streaming causes severe frame drops.
+    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
   }, [messages, isLoading]);
 
   async function sendMessage(content) {
