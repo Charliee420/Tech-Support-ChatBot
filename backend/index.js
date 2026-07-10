@@ -9,7 +9,13 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? false
+      : ["http://localhost:5173", "http://127.0.0.1:5173"],
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 
 const apiKey = process.env.LLM_API_KEY;

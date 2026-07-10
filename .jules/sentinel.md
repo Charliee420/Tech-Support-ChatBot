@@ -2,3 +2,8 @@
 **Vulnerability:** The backend leaked internal error messages (e.g., API key errors or stack traces) to the client upon failure. Additionally, the `/api/chat` endpoint was vulnerable to DoS attacks due to an unbounded message array and lack of message length limits.
 **Learning:** Returning `err.message` directly in `catch` blocks can expose sensitive internal details, such as API configurations or underlying system paths. Allowing an arbitrary number of large messages can lead to severe API token exhaustion and server crashes.
 **Prevention:** Always sanitize error messages before returning them to the client; return generic errors and log details internally. Validate inputs for both array length and string length (e.g., limit message count to 100 and individual message length to 4000 characters) before processing them in external API calls.
+
+## 2026-07-10 - Prevented Overly Permissive CORS Configuration
+**Vulnerability:** The backend application previously used `app.use(cors())`, allowing any domain to send cross-origin requests by generating the `Access-Control-Allow-Origin: *` response header.
+**Learning:** Default configurations of libraries like `cors` can lead to unintended exposure of sensitive API endpoints to unauthorized domains. In development mode, the Vite server proxies requests, so CORS doesn't even need to be fully open to the world, only to the dev origin (`http://localhost:5173`). In production, if both frontend and backend are on the same domain, cross-origin requests should be rejected.
+**Prevention:** Always restrict `cors` middleware explicitly. In this project, `corsOptions` ensures `origin` is set to false in production (blocking cross-origin requests) and limited strictly to standard dev hosts during development.
