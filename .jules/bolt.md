@@ -1,7 +1,3 @@
 ## 2024-05-24 - React.memo for Streaming Chat Interfaces
 **Learning:** In a streaming chat interface, new chunks of text trigger re-renders of the entire message list if state is held in a parent component (like App). This can cause severe performance degradation (O(n^2) rendering cost) as the chat gets longer because every previous message and its complex Markdown components re-render on every tiny chunk of text received.
 **Action:** Always wrap chat message components and expensive inner components (like Markdown renderers) in `React.memo` to prevent re-rendering historical messages while the active message is streaming. Additionally, ensure complex objects passed as props (like markdown components maps) are hoisted outside the render cycle so they maintain referential equality.
-
-## 2026-07-07 - Streaming React Tree Reconciliation
-**Learning:** React re-renders the entire component tree rapidly when processing stream chunks. When combined with continuous smooth scrolling (`scrollIntoView({ behavior: "smooth" })`), the constant animation interruption causes significant browser jank. Additionally, child components not properly memoized will repeatedly render on every character streamed.
-**Action:** Always wrap static/input components in `React.memo`, pass stable callbacks via `useCallback`, and disable `smooth` scroll behavior during active text streaming to prevent animation frame overload.

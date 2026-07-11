@@ -10,21 +10,18 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
   const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
 
-  useEffect(() => {
-    // ⚡ Bolt: Use auto scroll behavior during streaming to prevent animation jank caused by rapid successive smooth scroll calls
-    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
-  }, [messages, isLoading]);
-
-  // ⚡ Bolt: memoize sendMessage to keep the onSend prop stable, allowing ChatInput to memoize correctly
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
 
@@ -40,7 +37,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: currentMessages.map((m) => ({
+
             role: m.role,
             content: m.content,
           })),

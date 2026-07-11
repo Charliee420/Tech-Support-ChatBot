@@ -1,6 +1,6 @@
 import { useState, useRef, memo } from "react";
 
-// ⚡ Bolt: wrap ChatInput in React.memo to prevent re-rendering during chat streaming
+
 const ChatInput = memo(function ChatInput({ onSend, disabled }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef(null);
