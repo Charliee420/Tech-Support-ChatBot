@@ -66,6 +66,9 @@ function ChatInput({ onSend, disabled }) {
           </svg>
         </button>
       </div>
+      <div className="text-xs text-zinc-500 text-center mt-2 max-w-3xl mx-auto">
+        Press Enter to send, Shift + Enter for new line
+      </div>
     </footer>
   );
 }
