@@ -9,7 +9,11 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-app.use(cors());
+// 🛡️ Sentinel: Restrict CORS to specific origin to prevent unauthorized cross-origin requests
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 
 const apiKey = process.env.LLM_API_KEY;
