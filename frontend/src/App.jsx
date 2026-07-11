@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ChatMessage from "./components/ChatMessage.jsx";
 import ChatInput from "./components/ChatInput.jsx";
 
@@ -10,29 +10,34 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
+  const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
 
-  async function sendMessage(content) {
+  const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
-    setMessages((prev) => [...prev, userMsg]);
+
+    // Read the current messages synchronously from the ref
+    const currentMessages = [...messagesRef.current, userMsg];
+
+    setMessages((prev) => [...prev, userMsg, { role: "assistant", content: "" }]);
     setIsLoading(true);
     setError(null);
-
-    const assistantMsg = { role: "assistant", content: "" };
-    setMessages((prev) => [...prev, assistantMsg]);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
+
             role: m.role,
             content: m.content,
           })),
@@ -90,7 +95,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   return (
     <div className="flex flex-col h-dvh max-w-3xl mx-auto">

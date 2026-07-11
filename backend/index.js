@@ -12,6 +12,46 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
+// 🛡️ Sentinel: Simple in-memory rate limiter to prevent DoS and API abuse
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 20;
+
+// Cleanup interval to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of rateLimitMap.entries()) {
+    if (now - data.startTime > RATE_LIMIT_WINDOW_MS) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS);
+
+function rateLimiter(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+
+  if (!rateLimitMap.has(ip)) {
+    rateLimitMap.set(ip, { count: 1, startTime: now });
+    return next();
+  }
+
+  const data = rateLimitMap.get(ip);
+  if (now - data.startTime > RATE_LIMIT_WINDOW_MS) {
+    // Reset window
+    rateLimitMap.set(ip, { count: 1, startTime: now });
+    return next();
+  }
+
+  if (data.count >= MAX_REQUESTS_PER_WINDOW) {
+    // 🛡️ Sentinel: Fail securely without leaking internal state
+    return res.status(429).json({ error: "Too many requests, please try again later." });
+  }
+
+  data.count++;
+  next();
+}
+
 const apiKey = process.env.LLM_API_KEY;
 const baseURL = process.env.LLM_BASE_URL;
 
@@ -29,7 +69,7 @@ const SYSTEM_PROMPT =
   process.env.SYSTEM_PROMPT ||
   "You are an expert tech support assistant specializing in software solutions and critical problem-solving. Provide clear, actionable answers. Use code examples where relevant.";
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", rateLimiter, async (req, res) => {
   try {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
