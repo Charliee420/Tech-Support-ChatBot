@@ -18,7 +18,7 @@ function CopyButton({ code }) {
   return (
     <button
       onClick={handleCopy}
-      aria-live="polite"
+
       className="absolute top-2 right-2 px-2 py-1 text-[11px] rounded-md bg-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
     >
       {copied ? "Copied!" : "Copy"}
@@ -103,7 +103,7 @@ const components = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2"
+        className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-800 rounded-sm"
       >
         {children}
       </a>
