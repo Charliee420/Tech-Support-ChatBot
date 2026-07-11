@@ -18,28 +18,26 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
+  const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   useEffect(() => {
-    // ⚡ Bolt: switch from smooth scroll to auto scroll when streaming chunks to avoid layout jank
-    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
-  }, [messages, isLoading]);
 
-  // ⚡ Bolt: stabilize sendMessage with useCallback so ChatInput memoization works properly
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
-    setMessages((prev) => [...prev, userMsg]);
+
+    // Read the current messages synchronously from the ref
+    const currentMessages = [...messagesRef.current, userMsg];
+
+    setMessages((prev) => [...prev, userMsg, { role: "assistant", content: "" }]);
     setIsLoading(true);
     setError(null);
-
-    const assistantMsg = { role: "assistant", content: "" };
-    setMessages((prev) => [...prev, assistantMsg]);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messagesRef.current, userMsg].map((m) => ({
+
             role: m.role,
             content: m.content,
           })),
