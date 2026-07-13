@@ -18,7 +18,12 @@ function CopyButton({ code }) {
   return (
     <button
       onClick={handleCopy}
+// <<<<<<< palette-copy-button-a11y-10680843396001138666
+//       title="Copy code"
+//       aria-label={copied ? "Copied!" : "Copy code"}
+// =======
 
+// >>>>>>> main
       className="absolute top-2 right-2 px-2 py-1 text-[11px] rounded-md bg-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
     >
       {copied ? "Copied!" : "Copy"}
