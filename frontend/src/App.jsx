@@ -27,6 +27,13 @@ function App() {
   }, [messages]);
 
   useEffect(() => {
+// <<<<<<< bolt/optimize-scrolling-behavior-6704083797251233455
+//     // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+//     // Smooth scrolling every 50ms while streaming causes severe frame drops.
+//     bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
+//   }, [messages, isLoading]);
+// =======
+// >>>>>>> main
 
 // <<<<<<< bolt-optimize-chat-input-9126806293160409204
 //   // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
