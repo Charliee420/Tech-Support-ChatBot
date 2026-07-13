@@ -20,8 +20,18 @@ function App() {
   const bottomRef = useRef(null);
   const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
+  // ⚡ Bolt: Maintain a ref of messages to use inside the memoized sendMessage callback
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   useEffect(() => {
 
+// <<<<<<< bolt-optimize-chat-input-9126806293160409204
+//   // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
+// =======
+// >>>>>>> main
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
 
@@ -37,7 +47,11 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+// <<<<<<< bolt-optimize-chat-input-9126806293160409204
+//           messages: [...messagesRef.current, userMsg].map((m) => ({
+// =======
 
+// >>>>>>> main
             role: m.role,
             content: m.content,
           })),
