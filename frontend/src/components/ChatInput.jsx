@@ -1,6 +1,10 @@
 import { useState, useRef, memo } from "react";
 
-// ⚡ Bolt: Memoize ChatInput to prevent re-rendering during message streaming
+// <<<<<<< bolt-optimize-chat-input-9126806293160409204
+// // ⚡ Bolt: Memoize ChatInput to prevent re-rendering during message streaming
+// =======
+
+// >>>>>>> main
 const ChatInput = memo(function ChatInput({ onSend, disabled }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef(null);

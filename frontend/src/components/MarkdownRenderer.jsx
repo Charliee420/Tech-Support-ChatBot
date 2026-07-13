@@ -18,7 +18,8 @@ function CopyButton({ code }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-2 right-2 px-2 py-1 text-[11px] rounded-md bg-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-colors"
+
+      className="absolute top-2 right-2 px-2 py-1 text-[11px] rounded-md bg-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
     >
       {copied ? "Copied!" : "Copy"}
     </button>
@@ -44,13 +45,16 @@ const components = {
     }
 
     return (
-      <div className="relative group my-3">
+      <div className="relative group my-3" aria-label="Code snippet">
         <div className="flex items-center justify-between px-4 py-1.5 rounded-t-lg bg-zinc-800 border-b border-zinc-700">
           <span className="text-[11px] text-zinc-500 font-mono">
             {className?.replace("language-", "") || "code"}
           </span>
         </div>
-        <pre className="overflow-x-auto rounded-b-lg bg-zinc-900 p-4 text-sm leading-relaxed">
+        <pre
+          tabIndex={0}
+          className="overflow-x-auto rounded-b-lg bg-zinc-900 p-4 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+        >
           <code className={className} {...props}>
             {children}
           </code>
@@ -99,7 +103,7 @@ const components = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2"
+        className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-800 rounded-sm"
       >
         {children}
       </a>
@@ -110,7 +114,10 @@ const components = {
   },
   table({ children }) {
     return (
-      <div className="overflow-x-auto mb-3">
+      <div
+        tabIndex={0}
+        className="overflow-x-auto mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-md"
+      >
         <table className="w-full text-sm border-collapse">{children}</table>
       </div>
     );
