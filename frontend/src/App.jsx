@@ -10,10 +10,6 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
-  const messagesRef = useRef(messages);
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,6 +17,8 @@ function App() {
   const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
@@ -37,7 +35,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-
+          messages: currentMessages.map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -61,6 +59,9 @@ function App() {
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
 
+        // ⚡ Bolt: Batch chunk updates to reduce render overhead
+        let chunkContent = "";
+
         for (let line of lines) {
           line = line.trim();
           if (!line.startsWith("data: ")) continue;
@@ -72,21 +73,25 @@ function App() {
             if (data.error) throw new Error(data.error);
             if (data.done) continue;
             if (data.content) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    content: last.content + data.content,
-                  };
-                }
-                return updated;
-              });
+              chunkContent += data.content;
             }
           } catch {
             // skip malformed chunks
           }
+        }
+
+        if (chunkContent) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...last,
+                content: last.content + chunkContent,
+              };
+            }
+            return updated;
+          });
         }
       }
     } catch (err) {
