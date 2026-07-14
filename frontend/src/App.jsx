@@ -10,15 +10,9 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
-  const messagesRef = useRef(messages);
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
-  const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   // ⚡ Bolt: Maintain a ref of messages to use inside the memoized sendMessage callback
   const messagesRef = useRef(messages);
@@ -27,18 +21,12 @@ function App() {
   }, [messages]);
 
   useEffect(() => {
-// <<<<<<< bolt/optimize-scrolling-behavior-6704083797251233455
-//     // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
-//     // Smooth scrolling every 50ms while streaming causes severe frame drops.
-//     bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
-//   }, [messages, isLoading]);
-// =======
-// >>>>>>> main
+    // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+    // Smooth scrolling every 50ms while streaming causes severe frame drops.
+    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
+  }, [messages, isLoading]);
 
-// <<<<<<< bolt-optimize-chat-input-9126806293160409204
-//   // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
-// =======
-// >>>>>>> main
+  // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
 
@@ -54,11 +42,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-// <<<<<<< bolt-optimize-chat-input-9126806293160409204
-//           messages: [...messagesRef.current, userMsg].map((m) => ({
-// =======
-
-// >>>>>>> main
+          messages: [...messagesRef.current, userMsg].map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -82,6 +66,8 @@ function App() {
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
 
+        let chunkContent = "";
+
         for (let line of lines) {
           line = line.trim();
           if (!line.startsWith("data: ")) continue;
@@ -93,21 +79,25 @@ function App() {
             if (data.error) throw new Error(data.error);
             if (data.done) continue;
             if (data.content) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    content: last.content + data.content,
-                  };
-                }
-                return updated;
-              });
+              chunkContent += data.content;
             }
           } catch {
             // skip malformed chunks
           }
+        }
+
+        if (chunkContent) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...last,
+                content: last.content + chunkContent,
+              };
+            }
+            return updated;
+          });
         }
       }
     } catch (err) {
