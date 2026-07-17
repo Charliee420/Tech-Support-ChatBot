@@ -5,3 +5,6 @@
 ## 2026-07-10 - Smooth Scroll Animation Thrashing in Streaming Interfaces
 **Learning:** Calling `scrollIntoView({ behavior: "smooth" })` continuously during token streaming (e.g., dozens of times per second) causes severe frame drops and visual jank. The browser constantly cancels and restarts the smooth scroll animation, leading to layout thrashing.
 **Action:** Always use `behavior: "auto"` (instant scrolling) during active streaming phases, and only use `smooth` scrolling for discrete, one-off events (like a user explicitly sending a message or navigating).
+## 2026-07-17 - Git Diff Reviewer Quirks During Deduplication
+**Learning:** When cleaning up Git merge conflict markers and deduplicating variable declarations (like `messagesRef`), the `request_code_review` tool (which evaluates changes based on `git diff HEAD`) might misinterpret the removal of the duplicate initialization as a complete deletion of the variable, leading to incorrect claims of a `ReferenceError`.
+**Action:** Always manually verify the final file state using `grep` or `cat` to ensure at least one valid declaration remains, and do not blindly trust the reviewer's ReferenceError claims if you have manually confirmed the variable is still defined.
