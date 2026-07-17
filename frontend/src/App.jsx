@@ -82,6 +82,10 @@ function App() {
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
 
+        // ⚡ Bolt: Batch SSE content chunks to reduce the number of React state updates
+        // and react-markdown re-renders during the stream.
+        let chunkContent = "";
+
         for (let line of lines) {
           line = line.trim();
           if (!line.startsWith("data: ")) continue;
@@ -93,21 +97,25 @@ function App() {
             if (data.error) throw new Error(data.error);
             if (data.done) continue;
             if (data.content) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    content: last.content + data.content,
-                  };
-                }
-                return updated;
-              });
+              chunkContent += data.content;
             }
           } catch {
             // skip malformed chunks
           }
+        }
+
+        if (chunkContent) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...last,
+                content: last.content + chunkContent,
+              };
+            }
+            return updated;
+          });
         }
       }
     } catch (err) {
