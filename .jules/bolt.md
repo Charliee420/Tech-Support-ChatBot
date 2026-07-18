@@ -8,3 +8,6 @@
 ## 2026-07-10 - Smooth Scroll Animation Thrashing in Streaming Interfaces
 **Learning:** Calling `scrollIntoView({ behavior: "smooth" })` continuously during token streaming (e.g., dozens of times per second) causes severe frame drops and visual jank. The browser constantly cancels and restarts the smooth scroll animation, leading to layout thrashing.
 **Action:** Always use `behavior: "auto"` (instant scrolling) during active streaming phases, and only use `smooth` scrolling for discrete, one-off events (like a user explicitly sending a message or navigating).
+## 2026-07-18 - Layout Thrashing with Smooth Scrolling during Token Streaming
+**Learning:** Calling `scrollIntoView({ behavior: "smooth" })` continuously during token streaming causes severe frame drops and layout thrashing, as the browser constantly cancels and restarts the smooth scroll animation.
+**Action:** Use `behavior: "auto"` (instant scrolling) during active streaming to prevent layout thrashing and maintain frame rates.
