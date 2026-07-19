@@ -133,8 +133,22 @@ app.post("/api/chat", rateLimiter, async (req, res) => {
 
 const frontendDist = path.join(__dirname, "..", "frontend", "dist");
 if (process.env.NODE_ENV === "production" || fs.existsSync(frontendDist)) {
-  app.use(express.static(frontendDist));
+  // ⚡ Bolt: Cache static assets aggressively (1 year) since Vite adds content hashes.
+  // This eliminates 304 Not Modified network round trips for faster repeat loads.
+  app.use(
+    express.static(frontendDist, {
+      setHeaders: (res, p) => {
+        if (p.endsWith(".html")) {
+          res.setHeader("Cache-Control", "no-cache");
+        } else {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    })
+  );
   app.get("*", (_req, res) => {
+    // ⚡ Bolt: Prevent caching of index.html so users always get the latest asset hashes.
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(path.join(frontendDist, "index.html"));
   });
 }
