@@ -10,15 +10,9 @@ function App() {
         "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
     },
   ]);
-  const messagesRef = useRef(messages);
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
-  const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
 
   // ⚡ Bolt: Maintain a ref of messages to use inside the memoized sendMessage callback
   const messagesRef = useRef(messages);
@@ -27,18 +21,12 @@ function App() {
   }, [messages]);
 
   useEffect(() => {
-// <<<<<<< bolt/optimize-scrolling-behavior-6704083797251233455
-//     // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
-//     // Smooth scrolling every 50ms while streaming causes severe frame drops.
-//     bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
-//   }, [messages, isLoading]);
-// =======
-// >>>>>>> main
+    // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+    // Smooth scrolling every 50ms while streaming causes severe frame drops.
+    bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
+  }, [messages, isLoading]);
 
-// <<<<<<< bolt-optimize-chat-input-9126806293160409204
-//   // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
-// =======
-// >>>>>>> main
+  // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
   const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
 
@@ -54,11 +42,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-// <<<<<<< bolt-optimize-chat-input-9126806293160409204
-//           messages: [...messagesRef.current, userMsg].map((m) => ({
-// =======
-
-// >>>>>>> main
+          messages: [...messagesRef.current, userMsg].map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -155,11 +139,13 @@ function App() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg, i) => (
-          <ChatMessage key={i} message={msg} />
-        ))}
+        <div role="log" aria-live="polite" className="space-y-4">
+          {messages.map((msg, i) => (
+            <ChatMessage key={i} message={msg} />
+          ))}
+        </div>
         {isLoading && (
-          <div className="flex items-center gap-2 message-enter">
+          <div role="status" className="flex items-center gap-2 message-enter">
             <div className="size-6 rounded-full bg-zinc-800 flex items-center justify-center">
               <svg className="size-3 text-zinc-500 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -170,7 +156,7 @@ function App() {
           </div>
         )}
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 message-enter">
+          <div role="alert" className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 message-enter">
             {error}
           </div>
         )}
