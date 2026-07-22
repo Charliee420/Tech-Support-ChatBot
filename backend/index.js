@@ -133,8 +133,20 @@ app.post("/api/chat", rateLimiter, async (req, res) => {
 
 const frontendDist = path.join(__dirname, "..", "frontend", "dist");
 if (process.env.NODE_ENV === "production" || fs.existsSync(frontendDist)) {
-  app.use(express.static(frontendDist));
+  // ⚡ Bolt: Cache hashed Vite assets for 1 year, never cache index.html
+  app.use(
+    express.static(frontendDist, {
+      setHeaders: (res, path) => {
+        if (path.endsWith(".html")) {
+          res.setHeader("Cache-Control", "no-cache");
+        } else if (path.includes("/assets/")) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    })
+  );
   app.get("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(path.join(frontendDist, "index.html"));
   });
 }
