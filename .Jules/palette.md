@@ -1,0 +1,3 @@
+## 2024-07-24 - Missing tooltips on icon-only buttons
+**Learning:** Tooltips on icon-only buttons (like a copy icon or send icon) are critical for accessibility, specifically for users who rely on screen readers and need to understand the function of a button. While `aria-label` is great for screen readers, `title` provides a native tooltip on hover for mouse users. I should ensure both are present or a robust custom tooltip is used when `title` isn't preferred.
+**Action:** Next time I encounter an icon-only button, ensure it has both `aria-label` and `title` attributes for comprehensive accessibility.
