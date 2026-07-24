@@ -133,7 +133,19 @@ app.post("/api/chat", rateLimiter, async (req, res) => {
 
 const frontendDist = path.join(__dirname, "..", "frontend", "dist");
 if (process.env.NODE_ENV === "production" || fs.existsSync(frontendDist)) {
-  app.use(express.static(frontendDist));
+  app.use(
+    express.static(frontendDist, {
+      setHeaders: (res, reqPath) => {
+        // ⚡ Bolt: Cache static assets to improve load times.
+        // HTML gets no-cache; other hashed assets (like CSS and JS in dist/assets) get long-term caching.
+        if (reqPath.endsWith(".html")) {
+          res.setHeader("Cache-Control", "no-cache");
+        } else {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    })
+  );
   app.get("*", (_req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
   });
