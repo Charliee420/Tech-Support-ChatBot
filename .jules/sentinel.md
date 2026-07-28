@@ -15,3 +15,7 @@
 **Vulnerability:** Missing rate limiting on the `/api/chat` endpoint, exposing the application to DoS attacks and costly LLM API overruns.
 **Learning:** Using LLM endpoints without rate limits presents a unique financial and functional risk. In cases where external modules (like `express-rate-limit`) shouldn't be added to maintain minimal dependencies, a simple `Map`-based in-memory rate limiter with a `setInterval` cleanup function effectively manages requests without leaking memory.
 **Prevention:** Always implement rate limiting on any endpoint making external API calls (especially LLMs or billing endpoints), and ensure the limits apply per-IP with secure, generic error messages (e.g., 429 status code) without exposing internal request counts.
+## 2026-07-28 - Added Security Headers Middleware
+**Vulnerability:** The Express backend lacked essential security headers, leaving it potentially exposed to clickjacking, MIME-sniffing, and downgrade attacks.
+**Learning:** Relying solely on default Express configurations omits important security headers like X-Frame-Options, X-Content-Type-Options, and Strict-Transport-Security. These headers can be added manually via custom middleware without adding new dependencies (like Helmet) when strict constraints apply.
+**Prevention:** Always implement standard security headers early in the backend setup. A simple custom middleware configuring res.setHeader is an effective, zero-dependency method to improve base security posture.
