@@ -155,25 +155,27 @@ function App() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg, i) => (
-          <ChatMessage key={i} message={msg} />
-        ))}
-        {isLoading && (
-          <div className="flex items-center gap-2 message-enter">
-            <div className="size-6 rounded-full bg-zinc-800 flex items-center justify-center">
-              <svg className="size-3 text-zinc-500 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+        <div role="log" aria-live="polite" className="space-y-4">
+          {messages.map((msg, i) => (
+            <ChatMessage key={i} message={msg} />
+          ))}
+          {isLoading && (
+            <div role="status" className="flex items-center gap-2 message-enter">
+              <div className="size-6 rounded-full bg-zinc-800 flex items-center justify-center">
+                <svg className="size-3 text-zinc-500 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+              <span className="text-sm text-zinc-500">Thinking...</span>
             </div>
-            <span className="text-sm text-zinc-500">Thinking...</span>
-          </div>
-        )}
-        {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 message-enter">
-            {error}
-          </div>
-        )}
+          )}
+          {error && (
+            <div role="alert" className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 message-enter">
+              {error}
+            </div>
+          )}
+        </div>
         <div ref={bottomRef} />
       </main>
 
