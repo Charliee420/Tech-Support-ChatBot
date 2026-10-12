@@ -17,6 +17,15 @@ app.use(
 );
 app.use(express.json({ limit: "2mb" }));
 
+// 🛡️ Sentinel: Add security headers to protect against common web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
+});
+
 // 🛡️ Sentinel: Simple in-memory rate limiter to prevent DoS and API abuse
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
