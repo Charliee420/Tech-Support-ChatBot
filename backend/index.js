@@ -9,6 +9,15 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+
+// 🛡️ Sentinel: Add essential security headers manually to prevent clickjacking and MIME-sniffing
+app.use((req, res, next) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
+});
+
 // 🛡️ Sentinel: Restrict overly permissive CORS configuration to prevent unauthorized cross-origin access
 app.use(
   cors({
