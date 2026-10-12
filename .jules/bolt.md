@@ -8,3 +8,7 @@
 ## 2026-07-10 - Smooth Scroll Animation Thrashing in Streaming Interfaces
 **Learning:** Calling `scrollIntoView({ behavior: "smooth" })` continuously during token streaming (e.g., dozens of times per second) causes severe frame drops and visual jank. The browser constantly cancels and restarts the smooth scroll animation, leading to layout thrashing.
 **Action:** Always use `behavior: "auto"` (instant scrolling) during active streaming phases, and only use `smooth` scrolling for discrete, one-off events (like a user explicitly sending a message or navigating).
+
+## 2026-07-27 - Static Asset Caching
+**Learning:** The Express backend serving Vite static builds previously did not set explicitly `Cache-Control` headers for static assets, forcing clients to re-download the same JavaScript, CSS, and HTML assets on every visit. Setting `no-cache` for `.html` ensures fresh deployments are always fetched, while `public, max-age=31536000, immutable` for `/assets/` leverages Vite's unique hash naming convention to cache static bundles indefinitely.
+**Action:** When serving Vite static builds via Express, manually apply these dual caching strategies in the `express.static` middleware using the `setHeaders` property.
