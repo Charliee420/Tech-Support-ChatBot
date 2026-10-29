@@ -1,3 +1,3 @@
-## 2024-07-07 - Make overflowing horizontal content keyboard accessible
-**Learning:** Container elements like `pre` (code blocks) or wrappers for tables often have `overflow-x-auto` to allow horizontal scrolling, but these are not focusable by default, meaning keyboard-only users cannot scroll them.
-**Action:** Always add `tabIndex={0}` and clear focus indicators (e.g. `focus-visible:outline-none focus-visible:ring-2`) to scrollable container elements like code blocks and tables to ensure they are fully navigable and scrollable for keyboard users.
+## 2026-07-17 - Dynamic ARIA Live Regions for Streaming Chat
+**Learning:** In React applications with real-time text streaming (like SSE chatbots), native smooth scrolling causes layout jank, but more importantly for accessibility, standard element additions are not reliably announced to screen readers.
+**Action:** Always wrap dynamically expanding message lists in an element with `role="log"` and `aria-live="polite"` to ensure screen readers automatically announce new updates as they are appended.
