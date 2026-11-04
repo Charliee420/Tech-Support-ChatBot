@@ -4,22 +4,30 @@ import ChatInput from "./components/ChatInput.jsx";
 
 function App() {
   const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const bottomRef = useRef(null);
-  const messagesRef = useRef(messages); // ⚡ Bolt: ref to track current messages for stable callback
+      {
+        role: "assistant",
+        content:
+          "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
+      },
+    ]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const bottomRef = useRef(null);
 
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
+    // ⚡ Bolt: Maintain a ref of messages to use inside the memoized sendMessage callback
+    const messagesRef = useRef(messages);
+    useEffect(() => {
+      messagesRef.current = messages;
+    }, [messages]);
 
-  const sendMessage = useCallback(async (content) => {
+    useEffect(() => {
+      // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+      // Smooth scrolling every 50ms while streaming causes severe frame drops.
+      bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
+    }, [messages, isLoading]);
+
+    // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
+    const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
 
     // Read the current messages synchronously from the ref
@@ -34,12 +42,12 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: currentMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+              messages: currentMessages.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+            }),
+        });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
@@ -58,6 +66,8 @@ function App() {
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
 
+        // ⚡ Bolt: Batch SSE content chunks to reduce the number of React state updates
+        // and react-markdown re-renders during the stream.
         let chunkContent = "";
 
         for (let line of lines) {
@@ -128,7 +138,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="log" aria-live="polite">
         {messages.map((msg, i) => (
           <ChatMessage key={i} message={msg} />
         ))}
