@@ -9,12 +9,11 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-// 🛡️ Sentinel: Restrict overly permissive CORS configuration to prevent unauthorized cross-origin access
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  })
-);
+// 🛡️ Sentinel: Restrict CORS to specific origin to prevent unauthorized cross-origin requests
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 
 // 🛡️ Sentinel: Simple in-memory rate limiter to prevent DoS and API abuse
