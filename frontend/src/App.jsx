@@ -1,43 +1,53 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ChatMessage from "./components/ChatMessage.jsx";
 import ChatInput from "./components/ChatInput.jsx";
 
 function App() {
   const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const bottomRef = useRef(null);
+      {
+        role: "assistant",
+        content:
+          "Hello! I'm your tech support assistant. Ask me anything about software solutions, troubleshooting, or critical problems.",
+      },
+    ]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const bottomRef = useRef(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+    // ⚡ Bolt: Maintain a ref of messages to use inside the memoized sendMessage callback
+    const messagesRef = useRef(messages);
+    useEffect(() => {
+      messagesRef.current = messages;
+    }, [messages]);
 
-  async function sendMessage(content) {
+    useEffect(() => {
+      // ⚡ Bolt: Prevent layout thrashing by disabling smooth scroll during token streaming.
+      // Smooth scrolling every 50ms while streaming causes severe frame drops.
+      bottomRef.current?.scrollIntoView({ behavior: isLoading ? "auto" : "smooth" });
+    }, [messages, isLoading]);
+
+    // ⚡ Bolt: Memoize sendMessage to prevent ChatInput from re-rendering on every streaming chunk
+    const sendMessage = useCallback(async (content) => {
     const userMsg = { role: "user", content };
-    setMessages((prev) => [...prev, userMsg]);
+
+    // Read the current messages synchronously from the ref
+    const currentMessages = [...messagesRef.current, userMsg];
+
+    setMessages((prev) => [...prev, userMsg, { role: "assistant", content: "" }]);
     setIsLoading(true);
     setError(null);
-
-    const assistantMsg = { role: "assistant", content: "" };
-    setMessages((prev) => [...prev, assistantMsg]);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+              messages: currentMessages.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+            }),
+        });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
@@ -56,6 +66,10 @@ function App() {
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
 
+        // ⚡ Bolt: Batch SSE content chunks to reduce the number of React state updates
+        // and react-markdown re-renders during the stream.
+        let chunkContent = "";
+
         for (let line of lines) {
           line = line.trim();
           if (!line.startsWith("data: ")) continue;
@@ -67,21 +81,25 @@ function App() {
             if (data.error) throw new Error(data.error);
             if (data.done) continue;
             if (data.content) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    content: last.content + data.content,
-                  };
-                }
-                return updated;
-              });
+              chunkContent += data.content;
             }
           } catch {
             // skip malformed chunks
           }
+        }
+
+        if (chunkContent) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...last,
+                content: last.content + chunkContent,
+              };
+            }
+            return updated;
+          });
         }
       }
     } catch (err) {
@@ -90,7 +108,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   return (
     <div className="flex flex-col h-dvh max-w-3xl mx-auto">
@@ -120,7 +138,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="log" aria-live="polite">
         {messages.map((msg, i) => (
           <ChatMessage key={i} message={msg} />
         ))}
